@@ -8,13 +8,18 @@ const repoList = document.querySelector(".repo-list");
 const allRepos = document.querySelector(".repos")
 //Repo data class
 const repoData = document.querySelector(".repo-data");
+//Back to repo button
+const backButton = document.querySelector(".view-repos");
+//Filter Input
+const filterInput = document.querySelector(".filter-repos");
+
 
 
 //Async function to fecth API data
 const getData = async function () {
     const usersRequest = await fetch(`https://api.github.com/users/${username}`);
     const data = await usersRequest.json();
-    console.log(data);
+    //console.log(data);
     displayUserInfo(data);
 };
 
@@ -40,11 +45,12 @@ const displayUserInfo = function (data) {
 const getRepoData = async function () {
     const repoRequest = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`);
     const repoData = await repoRequest.json();
-    console.log(repoData);
+    //console.log(repoData);
     displayRepo(repoData);
 };
 
 const displayRepo = function (repos) {
+    filterInput.classList.remove("hide");
     for (const repo of repos) {
         const repoItem = document.createElement("li");
         repoItem.classList.add("repo");
@@ -68,13 +74,13 @@ const getRepo = async function (repoName) {
     console.log(repoInfo);
     const fetchLanguages = await fetch(repoInfo.languages_url);
     const languageData = await fetchLanguages.json();
-    console.log(languageData);
+    //console.log(languageData);
 
 //Language list
   const languages = [];
   for (const language in languageData) {
     languages.push(language);
-    console.log(languages);
+    //console.log(languages);
   }
   displayRepoInfo(repoInfo, languages);
 };
@@ -83,8 +89,9 @@ const getRepo = async function (repoName) {
 const displayRepoInfo = function (repoInfo, languages) {
     repoData.innerHTML = "";
     const div = document.createElement("div");
-    repoData.classList.remove("hide");
-    allRepos.classList.add("hide");
+    repoData.classList.remove("hide"); // Show repo data element
+    allRepos.classList.add("hide"); // Hide all repos element
+    backButton.classList.remove("hide");
     div.innerHTML = `<h3>Name: ${repoInfo.name}</h3>
     <p>Description: ${repoInfo.description}</p>
     <p>Default Branch: ${repoInfo.default_branch}</p>
@@ -92,3 +99,25 @@ const displayRepoInfo = function (repoInfo, languages) {
     <a class="visit" href="${repoInfo.html_url}" target="_blank" rel="noreferrer noopener">View Repo on GitHub!</a>`;
     repoData.append(div);
 };
+
+backButton.addEventListener("click", function () {
+    allRepos.classList.remove("hide");
+    repoData.classList.add("hide");
+    backButton.classList.add("hide");
+});
+
+filterInput.addEventListener("input", function (e) {
+    const searchText = e.target.value;
+    //console.log(searchText);
+    const repos = document.querySelectorAll(".repo");
+    const searchLowerText = searchText.toLowerCase();
+
+    for (const repo of repos) { // Loop to assign lowercase value to innertext of all repo elements
+        const repoLowerText = repo.innerText.toLowerCase(); 
+        if (repoLowerText.includes(searchLowerText)) {
+          repo.classList.remove("hide");  
+        } else {
+            repo.classList.add("hide");
+        }
+    }
+});
